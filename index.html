@@ -272,15 +272,15 @@
 
             // 3. Vẽ hộp Chú Thích (Annotation Box) trên đồ thị
             let note = getPhaseNote(currDL);
-            let boxW = 1000, boxH = 200;
+            let boxW = 500, boxH = 200;
             let boxX = originX + 100, boxY = padT + 40;
             
             ctxG.fillStyle = note.bg; ctxG.strokeStyle = note.color; ctxG.lineWidth = 2;
             ctxG.beginPath(); ctxG.roundRect(boxX, boxY, boxW, boxH, 8); ctxG.fill(); ctxG.stroke();
             
-            ctxG.fillStyle = note.color; ctxG.font = "bold 22px Arial";
+            ctxG.fillStyle = note.color; ctxG.font = "bold 28px Arial";
             ctxG.fillText(note.title, boxX + 20, boxY + 35);
-            ctxG.font = "18px Arial";
+            ctxG.font = "24px Arial";
             ctxG.fillStyle = "#1e293b";
             ctxG.fillText(note.text, boxX + 20, boxY + 70);
 
