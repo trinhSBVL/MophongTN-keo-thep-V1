@@ -7,7 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f3f4f6; margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-        .app-container { width: 100%; max-width: 1400px; aspect-ratio: 16 / 8; background: white; box-shadow: 0 10px 25px rgba(0,0,0,0.1); display: flex; flex-direction: column; position: relative; overflow: hidden; border-radius: 8px; border: 1px solid #e5e7eb; }
+        .app-container { width: 100%; max-width: 1600px; aspect-ratio: 16 / 8; background: white; box-shadow: 0 10px 25px rgba(0,0,0,0.1); display: flex; flex-direction: column; position: relative; overflow: hidden; border-radius: 8px; border: 1px solid #e5e7eb; }
         
         .header-title { background: #1e3a8a; color: white; text-align: center; padding: 12px 0; font-size: 1.5rem; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; flex-shrink: 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); z-index: 20; }
         
@@ -17,7 +17,6 @@
         .graph-container { flex-grow: 1; position: relative; padding: 10px; display: flex; }
         .control-panel { width: 190px; background: #f8fafc; border-left: 1px solid #e2e8f0; padding: 15px; display: flex; flex-direction: column; gap: 15px; z-index: 10; }
         
-        /* Đã tăng độ trong suốt, giảm bóng đổ và độ mờ để nhìn rõ mẫu ở nền phía sau */
         .info-box { position: absolute; top: 10px; left: 10px; background: rgba(255,255,255,0.15); backdrop-filter: blur(1px); padding: 10px; border-radius: 6px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border: 1px solid rgba(203,213,225,0.3); z-index: 10; width: calc(100% - 20px); }
         .info-box h3 { text-shadow: 0px 1px 2px rgba(255,255,255,0.8); }
         .input-group { margin-top: 8px; display: flex; justify-content: space-between; align-items: center; font-size: 14px; font-weight: 500; text-shadow: 0px 1px 2px rgba(255,255,255,0.8); }
@@ -74,7 +73,7 @@
                 
                 <div class="annotations-overlay">
                     <div id="anno-1" class="annotation anno-blue">
-                        <b>GĐ Đàn hồi:</b> P tăng - ΔL tăng tỉ lệ.<br><i class="text-[10px]">ĐL Hooke: σ = E.ε</i>
+                        <b>GĐ Đàn hồi:</b> P tăng nhanh - ΔL tăng ít và tỉ lệ.<br><i class="text-[10px]">ĐL Hooke: σ = E.ε</i>
                     </div>
                     <div id="anno-2" class="annotation anno-orange">
                         <b>GĐ Chảy dẻo:</b> P không đổi - ΔL vẫn tăng (có biến dạng dư).
@@ -122,12 +121,12 @@
         forceSpeed: 1000, 
         scaleF: 1,    
         scaleL: 1,
-        breakRatio: 0.5 
+        breakRatio: 0.5,
+        yAxisMax: 40000 // Thêm state cho trục tung động, mặc định 40000
     };
 
     const CONSTANTS = {
-        MAX_X_BASE: 25, 
-        MAX_F_GRAPH: 50000
+        MAX_X_BASE: 25
     };
 
     const canvasSpecimen = document.getElementById('canvasSpecimen');
@@ -283,11 +282,11 @@
         const baseBottomGripY = h * 0.70; 
         
         // Tính toán khoảng cách vật lý của mẫu
-        const L_total = 20 + 15 + state.L0 + 15 + 20; // 20mm ngoài ngàm + 15mm bo tròn x 2
+        const L_total = 20 + 15 + state.L0 + 15 + 20; 
         const pxPerMmBase = (baseBottomGripY - topGripY) / L_total;
         
-        const extPx = 20 * pxPerMmBase;    // Đoạn thẳng D=14
-        const transPx = 15 * pxPerMmBase;  // Đoạn bo cong R=15
+        const extPx = 20 * pxPerMmBase;    
+        const transPx = 15 * pxPerMmBase;  
         
         const topExtY = topGripY + extPx;
         const topTransY = topExtY + transPx;
@@ -304,12 +303,12 @@
 
         // Chiều ngang
         const dPx = (state.d / 10) * 26; 
-        const D_px = (14 / 10) * 26; // Đường kính đoạn ngàm
+        const D_px = (14 / 10) * 26; 
 
         const topDist = neckY - topTransY;
         const botDist = botTransY - neckY;
 
-        // Vẽ Thước đo dịch sang phải 10mm (từ 55 lên 65)
+        // Vẽ Thước đo dịch sang phải 10mm
         const rulerX = centerX + 65; 
         drawRuler(ctxS, rulerX, topTransY, baseBotTransY, botTransY, pxPerMmBase);
 
@@ -387,23 +386,19 @@
             ctxS.fill(); ctxS.stroke();
         }
 
-        // Vẽ 2 ngàm kẹp
         draw3DGrip(ctxS, centerX, topGripY, true);
         draw3DGrip(ctxS, centerX, bottomGripY, false);
 
-        // Chú thích các kích thước
         ctxS.font = "bold 13px Arial";
         ctxS.textAlign = "right"; 
         const textXLeft = centerX - D_px/2 - 20;
         
         if (state.xBase === 0) {
-            // Chú thích đoạn D lớn
             const yTopExt = topGripY + extPx/2;
             ctxS.fillStyle = '#1e293b';
             ctxS.fillText(`D = 14 mm`, textXLeft, yTopExt);
             drawLeaderLine(ctxS, textXLeft, yTopExt, centerX - D_px/2, yTopExt, '#1e293b', true);
 
-            // Chú thích d0
             const yTopLabel = topTransY + 20;
             ctxS.fillStyle = '#1e3a8a';
             ctxS.fillText(`d₀ = ${state.d.toFixed(2)} mm`, textXLeft, yTopLabel);
@@ -424,7 +419,6 @@
             drawLeaderLine(ctxS, textXLeft, yNeckLabel, centerX - neckWidth/2, yNeckLabel, '#dc2626', true);
         }
 
-        // Mũi tên Lực P
         if (currentP > 0 && !isBroken) {
             ctxS.fillStyle = '#ef4444';
             drawArrow(ctxS, centerX, topGripY - 70, centerX, topGripY - 105);
@@ -498,14 +492,15 @@
 
         const padLeft = 75;
         const padBottom = 60;
-        const padTop = 25;
+        const padTop = 30;
         const padRight = 50; 
         const graphW = w - padLeft - padRight;
         const graphH = h - padBottom - padTop;
 
-        // Trục hoành luôn hiển thị đến giá trị max = 0.3 * L0
         const maxRealX = 0.3 * state.L0;
-        const maxScaleY = CONSTANTS.MAX_F_GRAPH * state.scaleF;
+        
+        // Cập nhật trục tung sử dụng state.yAxisMax (40000 hoặc 50000)
+        const maxScaleY = state.yAxisMax;
 
         const mapX = (realX) => padLeft + (realX / maxRealX) * graphW;
         const mapY = (y) => h - padBottom - (y / maxScaleY) * graphH;
@@ -517,17 +512,17 @@
         for(let i = 0; i <= maxRealX; i+=5) {
             ctxG.moveTo(mapX(i), padTop); ctxG.lineTo(mapX(i), h - padBottom);
         }
-        for(let i = 0; i <= 50000; i+=10000) {
-            let yGrid = i * state.scaleF;
-            if (yGrid > maxScaleY) break;
-            ctxG.moveTo(padLeft, mapY(yGrid)); ctxG.lineTo(padLeft + graphW, mapY(yGrid));
+        
+        // Vẽ lưới ngang theo chuẩn 10000, 20000... cố định
+        for(let yVal = 0; yVal <= state.yAxisMax; yVal += 10000) {
+            ctxG.moveTo(padLeft, mapY(yVal)); ctxG.lineTo(padLeft + graphW, mapY(yVal));
         }
         ctxG.stroke();
 
         ctxG.strokeStyle = '#334155'; ctxG.lineWidth = 2;
         ctxG.beginPath();
         drawArrow(ctxG, padLeft, h - padBottom, w - 20, h - padBottom); 
-        drawArrow(ctxG, padLeft, h - padBottom, padLeft, padTop - 15); 
+        drawArrow(ctxG, padLeft, h - padBottom, padLeft, padTop - 20); 
         
         ctxG.fillStyle = '#1e293b'; ctxG.font = "bold 13px Arial"; ctxG.textAlign = "center";
         ctxG.fillText("Biến dạng dài ΔL (mm)", padLeft + graphW / 2, h - 15);
@@ -541,12 +536,15 @@
         for(let i = 0; i <= maxRealX; i+=5) {
             ctxG.fillText(i.toFixed(0), mapX(i), h - padBottom + 16);
         }
+        
         ctxG.textAlign = "right";
-        for(let i = 0; i <= 50000; i+=10000) {
-            let yGrid = i * state.scaleF;
-            if (yGrid > maxScaleY) break;
-            ctxG.fillText(Math.round(yGrid), padLeft - 8, mapY(yGrid) + 4);
+        // Ghi nhãn trục Y chuẩn
+        for(let yVal = 0; yVal <= state.yAxisMax; yVal += 10000) {
+            ctxG.fillText(yVal, padLeft - 8, mapY(yVal) + 4);
         }
+
+        let currX = state.xBase * state.scaleL;
+        let currY = getPBase(state.xBase) * state.scaleF;
 
         if (state.xBase > 0) {
             ctxG.lineWidth = 3;
@@ -570,10 +568,6 @@
                 ctxG.moveTo(mapX(realX), mapY(realY));
             }
             ctxG.stroke();
-
-            let currPBase = getPBase(state.xBase);
-            let currX = state.xBase * state.scaleL;
-            let currY = currPBase * state.scaleF;
             
             if (state.xBase < CONSTANTS.MAX_X_BASE) {
                 ctxG.fillStyle = '#ef4444';
@@ -585,6 +579,45 @@
                 ctxG.moveTo(mapX(currX)+6, mapY(currY)-6); ctxG.lineTo(mapX(currX)-6, mapY(currY)+6);
                 ctxG.stroke();
             }
+
+            // --- VẼ TOOLTIP NỔI BÁM THEO ĐIỂM CHẤM ---
+            let px = mapX(currX);
+            let py = mapY(currY);
+
+            let boxW = 85;
+            let boxH = 40;
+            let offsetX = 12; // Mặc định lệch phải
+            let offsetY = -10; // Lệch lên một chút
+
+            // Căn chỉnh nếu trôi ra ngoài lề
+            if (px + offsetX + boxW > padLeft + graphW + 10) offsetX = -boxW - 12; // Căn trái
+            if (py + offsetY < padTop) offsetY = 12; // Căn xuống dưới
+            if (py + offsetY + boxH > h - padBottom) offsetY = -boxH - 12;
+
+            let tX = px + offsetX;
+            let tY = py + offsetY;
+
+            // Vẽ nền hộp thoại (tooltip)
+            ctxG.fillStyle = 'rgba(255, 255, 255, 0.92)';
+            ctxG.strokeStyle = '#94a3b8';
+            ctxG.lineWidth = 1;
+            ctxG.beginPath();
+            if (ctxG.roundRect) {
+                ctxG.roundRect(tX, tY, boxW, boxH, 4);
+            } else {
+                ctxG.rect(tX, tY, boxW, boxH);
+            }
+            ctxG.fill();
+            ctxG.stroke();
+
+            // Hiển thị chữ cho Tooltip
+            ctxG.fillStyle = '#dc2626'; // Đỏ (P)
+            ctxG.font = 'bold 11px Arial';
+            ctxG.textAlign = 'left';
+            ctxG.fillText(`P: ${Math.round(currY)} N`, tX + 6, tY + 16);
+
+            ctxG.fillStyle = '#2563eb'; // Xanh (dL)
+            ctxG.fillText(`ΔL: ${currX.toFixed(2)} mm`, tX + 6, tY + 31);
         }
 
         updateAnnotations();
@@ -599,11 +632,18 @@
     }
 
     function drawAll() {
+        // Cập nhật giá trị hiển thị bên bảng điều khiển
+        const realDeltaL = state.xBase * state.scaleL;
+        const currentP = getPBase(state.xBase) * state.scaleF;
+
+        // KIỂM TRA ĐIỀU KIỆN TRỤC TUNG: Nhảy từ 40000 lên 50000
+        if (currentP > 40000 && state.yAxisMax === 40000) {
+            state.yAxisMax = 50000;
+        }
+
         drawSpecimenCanvas();
         drawGraphCanvas();
         
-        const realDeltaL = state.xBase * state.scaleL;
-        const currentP = getPBase(state.xBase) * state.scaleF;
         valP.textContent = Math.round(currentP);
         valdL.textContent = realDeltaL.toFixed(2);
     }
@@ -645,6 +685,9 @@
         state.isFinished = false;
         cancelAnimationFrame(animationFrameId);
         state.xBase = 0;
+        
+        // Trả trục tung về 40000 mỗi lần làm lại
+        state.yAxisMax = 40000;
         
         state.breakRatio = Math.random() * (0.666 - 0.333) + 0.333; 
         
