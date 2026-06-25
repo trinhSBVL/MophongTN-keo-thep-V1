@@ -396,7 +396,7 @@
             // Vẽ đường chuẩn nằm ngang
             ctxS.beginPath();
             ctxS.moveTo(arcCenterX, arcCenterY);
-            ctxS.lineTo(arcCenterX - 35, arcCenterY);
+            ctxS.lineTo(arcCenterX - 45, arcCenterY);
             ctxS.strokeStyle = '#9333ea'; // Màu tím phân biệt rõ ràng
             ctxS.lineWidth = 1.2;
             ctxS.stroke();
@@ -405,7 +405,7 @@
             const angleRad = Math.atan2(offset45, -neckWidth); // Góc nghiêng của mặt nứt dẻo
             ctxS.beginPath();
             ctxS.moveTo(arcCenterX, arcCenterY);
-            ctxS.lineTo(arcCenterX + 35 * Math.cos(angleRad), arcCenterY + 35 * Math.sin(angleRad));
+            ctxS.lineTo(arcCenterX + 45 * Math.cos(angleRad), arcCenterY + 35 * Math.sin(angleRad));
             ctxS.setLineDash([3, 3]);
             ctxS.stroke();
             ctxS.setLineDash([]);
@@ -414,14 +414,14 @@
             const startA = Math.PI; 
             const endA = angleRad; 
             ctxS.beginPath();
-            ctxS.arc(arcCenterX, arcCenterY, 18, startA, endA, true); // true: ngược chiều kim đồng hồ
+            ctxS.arc(arcCenterX, arcCenterY, 28, startA, endA, true); // true: ngược chiều kim đồng hồ
             ctxS.stroke();
 
             // Ghi chữ text "45°"
             ctxS.fillStyle = '#9333ea';
-            ctxS.font = "bold 12px Arial";
+            ctxS.font = "bold 14px Arial";
             ctxS.textAlign = "center";
-            ctxS.fillText("45°", arcCenterX - 28, arcCenterY + 18);
+            ctxS.fillText("45°", arcCenterX - 38, arcCenterY + 28);
         }
 
         if (currentP > 0 && !isBroken) {
